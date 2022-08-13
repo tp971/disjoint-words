@@ -1,4 +1,4 @@
-# disjoint_words
+# disjoint-words
 
 This program searches for words with disjoint sets of characters, given a word
 list and a number of words.

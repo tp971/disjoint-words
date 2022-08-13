@@ -2,7 +2,7 @@ use std::fs::File;
 use std::error::Error;
 use std::io::{BufReader, BufRead, stdin};
 use std::num::NonZeroUsize;
-use std::thread::available_parallelism;
+use std::thread::{self, available_parallelism};
 
 use clap::{AppSettings, Arg, command};
 
@@ -95,9 +95,9 @@ fn distinct_letters(w: &str) -> bool {
 }
 
 fn find_words_naive(words: &[String], n: usize, threads: usize) {
-    crossbeam::scope(|scope| {
+    thread::scope(|scope| {
         for offset in 0..threads {
-            scope.spawn(move |_| {
+            scope.spawn(move || {
                 for i in 0.. {
                     let i = offset + i * threads;
                     if i >= words.len() {
@@ -107,7 +107,7 @@ fn find_words_naive(words: &[String], n: usize, threads: usize) {
                 }
             });
         }
-    }).unwrap();
+    });
 }
 
 fn find_words_naive_impl(mut words: &[String], n: usize, group: &[&String]) {
@@ -157,10 +157,10 @@ fn find_words_tree(words: &[String], n: usize, threads: usize) {
     let nodes = root.get_all_word_nodes();
     eprintln!("{} nodes", nodes.len());
 
-    crossbeam::scope(|scope| {
+    thread::scope(|scope| {
         for offset in 0..threads {
             let nodes = &nodes;
-            scope.spawn(move |_| {
+            scope.spawn(move || {
                 for i in 0.. {
                     let i = offset + i * threads;
                     if i >= nodes.len() {
@@ -171,7 +171,7 @@ fn find_words_tree(words: &[String], n: usize, threads: usize) {
                 }
             });
         }
-    }).unwrap();
+    });
 }
 
 fn find_words_tree_impl<'a>(root: &'a FastTree, n: usize, group: &mut Vec<&'a FastTree>, letters: &mut Vec<char>, node: &'a FastTree, mut skip: Option<char>) {
